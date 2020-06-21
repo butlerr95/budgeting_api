@@ -22,5 +22,8 @@ def create_app():
 
         with app.app_context():
             event.listen(db.engine, 'connect', _fk_pragma_on_connect)
-
+           
+            # Create database and tables if they don't exist
+            db.create_all()
+            
     return app
