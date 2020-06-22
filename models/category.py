@@ -1,3 +1,5 @@
+''' Module to define the Category object, which is a SQLAlchemy model '''
+
 from .database import db
 
 class Category(db.Model):

@@ -1,3 +1,5 @@
+''' Module to define the Expense object, which is a SQLAlchemy model '''
+
 from .database import db
 
 class Expense(db.Model):

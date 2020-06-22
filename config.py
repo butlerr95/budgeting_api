@@ -1,5 +1,8 @@
+''' Module to define configuration class. '''
+
 from os import path
 
+# Get current directory
 base_directory = path.abspath(path.dirname(__file__))
 
 class Config():

@@ -1,3 +1,5 @@
+''' Module to encapsulate API endpoints related to Expense. '''
+
 import json
 
 from flask import Blueprint, Response, request

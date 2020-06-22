@@ -1,3 +1,5 @@
+''' Main module to run the Flask server. '''
+
 from app import create_app
 
 app = create_app()

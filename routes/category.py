@@ -1,3 +1,5 @@
+''' Module to encapsulate API endpoints related to Category. '''
+
 import json
 
 from flask import Blueprint, Response, request
