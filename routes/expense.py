@@ -77,7 +77,7 @@ def create_expense():
 
     try:
         data = request.json
-        expense = Expense(data["date"], data["category_id"], data["description"], data["amount"])
+        expense = Expense(data["date"], data["category_id"], data["budget_id"], data["description"], data["amount"])
         db.session.add(expense)
         db.session.commit()
         return (Response(), 200)
@@ -100,6 +100,7 @@ def update_expense(expense_id):
             data = request.json
             expense.date = data["date"]
             expense.category_id = data["category_id"]
+            expense.budget_id = data["budget_id"]
             expense.description = data["description"]
             expense.amount = data["amount"]
             db.session.commit()
