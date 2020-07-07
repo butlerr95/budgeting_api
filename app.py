@@ -8,6 +8,7 @@ from routes.expense import expense as expense_routes
 from routes.category import category as category_routes
 from routes.budget import budget as budget_routes
 from routes.annual import annual as annual_routes
+from routes.weekly import weekly as weekly_routes
 
 def create_app():
 	''' Creates and returns the Flask app by loading config, 
@@ -20,6 +21,7 @@ def create_app():
 	app.register_blueprint(category_routes, url_prefix="/category")
 	app.register_blueprint(budget_routes, url_prefix="/budget")
 	app.register_blueprint(annual_routes, url_prefix="/annual")
+	app.register_blueprint(weekly_routes, url_prefix="/weekly")
 
 	db.init_app(app)
 

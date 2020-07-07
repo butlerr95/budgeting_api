@@ -14,10 +14,14 @@ from models.budget import Budget
 annual = Blueprint("annual", __name__)
 
 # GET annual summary for the given year
-@annual.route('/<year>', methods=['GET'])
-def get_annual_summary(year: str):
+@annual.route('/', methods=['GET'])
+def get_annual_summary():
 
     try:
+
+        query_string_dict = request.args
+        year = query_string_dict["year"]
+
         # Query total expenditure by month for the given year
         result = db.session.query(func.strftime("%m", Expense.date).label("month"), func.sum(Expense.amount).label("total"))\
                         .filter(func.strftime("%Y", Expense.date)==year)\
@@ -32,16 +36,15 @@ def get_annual_summary(year: str):
             }
 
             # Write data that is pulled back from the database into the dict
-            for result in result:
-                temp_dict[result[0]] = result[1]
+            for r in result:
+                temp_dict[r[0]] = r[1]
 
             json_response = json.dumps(temp_dict)
 
             return json_response
 
-        else:
-            # Return No Content HTTP response
-            return (Response(), 204)
+        # Return No Content HTTP response
+        return (Response(), 204)
 
     except:
         # Return Bad Request HTTP response
