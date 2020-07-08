@@ -20,48 +20,51 @@ weekly = Blueprint("weekly", __name__)
 @weekly.route('/summary', methods=['GET'])
 def get_weekly_summary():
     
-    # Get week_start param and calculate the week_end date
-    query_string_dict = request.args
-    week_start = query_string_dict["week_start"]
-    week_end = get_week_end(week_start)
+    try:
+        # Get week_start param and calculate the week_end date
+        query_string_dict = request.args
+        week_start = query_string_dict["week_start"]
+        week_end = get_week_end(week_start)
 
-    result = db.session.query(Budget.end_date, Budget.amount)\
-                    .filter(or_(and_(week_start >= Budget.start_date, week_start <= Budget.end_date),
-                                and_(week_end >= Budget.start_date, week_end <= Budget.end_date))).all()
+        result = db.session.query(Budget.end_date, Budget.amount)\
+                        .filter(or_(and_(week_start >= Budget.start_date, week_start <= Budget.end_date),
+                                    and_(week_end >= Budget.start_date, week_end <= Budget.end_date))).all()
 
-    if result:
+        if result:
 
-        budgets = list()
+            budgets = list()
 
-        # Write data that is pulled back from the database into the dict
-        for r in result:
-            budgets.append({
-                "end_date": r[0],
-                "amount": r[1]
-            })
+            # Write data that is pulled back from the database into the dict
+            for r in result:
+                budgets.append({
+                    "end_date": r[0],
+                    "amount": r[1]
+                })
 
-        weekly_budget = calculate_weekly_budget(week_start, week_end, budgets)
-        
-        spent = get_weekly_expenditure(week_start)
-        remaining = weekly_budget - spent
+            weekly_budget = calculate_weekly_budget(week_start, week_end, budgets)
+            
+            spent = get_weekly_expenditure(week_start)
+            
+            if(spent):
 
-        recent = get_recent_weekly(week_start, 5)
+                remaining = weekly_budget - spent
 
-        json_response = json.dumps({
-            "spent": spent,
-            "remaining": remaining,
-            "recent": recent
-        })
+                print(spent)
+                print(remaining)
 
-        return json_response
+                recent = get_recent_weekly(week_start, 5)
 
-    # Return No Content HTTP response
-    return (Response(), 204)
+                json_response = json.dumps({
+                    "spent": spent,
+                    "remaining": remaining,
+                    "recent": recent
+                })
 
-    # Query total expenditure by month for the given year
-    # result = db.session.query(func.strftime("%m", Expense.date).label("month"), func.sum(Expense.amount).label("total"))\
-    #                 .filter(func.strftime("%Y", Expense.date)==year)\
-    #                 .group_by("month")\
-    #                 .order_by("month")
+                return json_response
 
-    return Response()
+        # Return No Content HTTP response
+        return (Response(), 204)
+
+    except:
+        # Return Bad Request HTTP response
+        return (Response(), 400)

@@ -14,7 +14,7 @@ from models.budget import Budget
 annual = Blueprint("annual", __name__)
 
 # GET annual summary for the given year
-@annual.route('/', methods=['GET'])
+@annual.route('/summary', methods=['GET'])
 def get_annual_summary():
 
     try:
