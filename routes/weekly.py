@@ -26,12 +26,12 @@ def get_weekly_summary():
         week_start = query_string_dict["week_start"]
         week_end = get_week_end(week_start)
 
+        # Get all budgets that lie within week_start and week_end
         result = db.session.query(Budget.end_date, Budget.amount)\
                         .filter(or_(and_(week_start >= Budget.start_date, week_start <= Budget.end_date),
                                     and_(week_end >= Budget.start_date, week_end <= Budget.end_date))).all()
 
         if result:
-
             budgets = list()
 
             # Write data that is pulled back from the database into the dict
@@ -41,19 +41,20 @@ def get_weekly_summary():
                     "amount": r[1]
                 })
 
+            # Calculate the weekly budget based on the budget(s) extracted from the db
             weekly_budget = calculate_weekly_budget(week_start, week_end, budgets)
             
+            # Get the total spent for the week
             spent = get_weekly_expenditure(week_start)
             
             if(spent):
-
+                # Calculate remaining based on the weekly budget and amount spent
                 remaining = weekly_budget - spent
 
-                print(spent)
-                print(remaining)
-
+                # Get the 5 most recent expenses in the current week
                 recent = get_recent_weekly(week_start, 5)
 
+                # Serialise to json
                 json_response = json.dumps({
                     "spent": spent,
                     "remaining": remaining,

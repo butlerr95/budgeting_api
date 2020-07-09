@@ -9,10 +9,21 @@ from models.database import db
 from models.expense import Expense
 from models.category import Category
 
-def get_recent_weekly(week_start: str, number_expenses: int):
+class WeeklyUtilsException(Exception):
+    ''' Weekly Utils base exception '''
+    pass
 
+class IncorrectFormatException(WeeklyUtilsException):
+    ''' Exception when string is provided in an incorrect format '''
+    pass
+
+def get_recent_weekly(week_start: str, number_expenses: int) -> list:
+    ''' Gets the N most recent expenses from the database, where N = number_expenses '''
+
+    # Calculate week end date from week_start
     week_end = get_week_end(week_start)
 
+    # Extract recent N expenses in the current week from the db, where N = number_expenses
     result = Expense.query\
             .filter(and_(Expense.date >= week_start, Expense.date <= week_end))\
             .join(Category, Expense.category_id==Category.id)\
@@ -22,7 +33,6 @@ def get_recent_weekly(week_start: str, number_expenses: int):
             .all()
 
     if result:
-
         expenses = list()
 
         # Write data that is pulled back from the database into the dict
@@ -37,10 +47,13 @@ def get_recent_weekly(week_start: str, number_expenses: int):
 
         return expenses
 
-def get_weekly_expenditure(week_start: str):
+def get_weekly_expenditure(week_start: str) -> float:
+    ''' Returns the weekly expenditure for the week with start date week_start '''
 
+    # Calculate the week end date from week_start
     week_end = get_week_end(week_start)
 
+    # Get the sum of all expenses in the current week
     result = db.session.query(func.sum(Expense.amount).label("total"))\
                         .filter(and_(Expense.date >= week_start, Expense.date <= week_end)).first()
 
@@ -50,10 +63,14 @@ def get_weekly_expenditure(week_start: str):
 def get_week_end(week_start: str) -> str:
     ''' Get the week_end date for a given week_start date '''
 
-    week_end_date = datetime.datetime.strptime(week_start, r"%Y-%m-%d") + datetime.timedelta(days=6)
-    week_end = week_end_date.strftime(r"%Y-%m-%d")
+    try:
+        week_end_date = datetime.datetime.strptime(week_start, r"%Y-%m-%d") + datetime.timedelta(days=6)
+        week_end = week_end_date.strftime(r"%Y-%m-%d")
 
-    return week_end
+        return week_end
+    
+    except:
+        raise IncorrectFormatException()
 
 # todo: test this
 def calculate_weekly_budget(week_start: str, week_end: str, budgets: list) -> float:
