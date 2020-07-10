@@ -5,13 +5,11 @@ import datetime
 
 from flask import Blueprint, Response, request
 
-from sqlalchemy import func, or_, and_
+from sqlalchemy import or_, and_
 
 from utils.weekly_utils import *
 
 from models.database import db
-from models.expense import Expense
-from models.category import Category
 from models.budget import Budget
 
 weekly = Blueprint("weekly", __name__)

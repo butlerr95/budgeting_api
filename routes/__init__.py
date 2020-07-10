@@ -3,3 +3,4 @@ from .category import category
 from .budget import budget
 from .annual import annual
 from .weekly import weekly
+from .monthly import monthly
