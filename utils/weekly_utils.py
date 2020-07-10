@@ -13,8 +13,16 @@ class WeeklyUtilsException(Exception):
     ''' Weekly Utils base exception '''
     pass
 
-class IncorrectFormatException(WeeklyUtilsException):
-    ''' Exception when string is provided in an incorrect format '''
+class IncorrectDateFormatException(WeeklyUtilsException):
+    ''' Exception when date string is provided in an incorrect format '''
+    pass
+
+class IncorrectBudgetFormatException(WeeklyUtilsException):
+    ''' Exception when budget object is provided in an incorrect format '''
+    pass
+
+class NoBudgetException(WeeklyUtilsException):
+    ''' Exception when an empty list is passed in instead of budgets '''
     pass
 
 def get_recent_weekly(week_start: str, number_expenses: int) -> list:
@@ -70,40 +78,49 @@ def get_week_end(week_start: str) -> str:
         return week_end
     
     except:
-        raise IncorrectFormatException()
+        raise IncorrectDateFormatException()
 
-# todo: test this
 def calculate_weekly_budget(week_start: str, week_end: str, budgets: list) -> float:
     ''' Calculate the weekly budget based on the budgets that the current week lies within '''
 
-    weekly_budget = 0
+    try:
+        weekly_budget = 0
 
-    # In the case that there is just one budget in the week range, convert the amount to weekly, round down and return
-    if len(budgets) <= 1:
-        weekly_budget = (budgets[0]["amount"] * 12) / 52
+        # In the case that there is just one budget in the week range, convert the amount to weekly, round down and return
+        if len(budgets) <= 1:
+            weekly_budget = (budgets[0]["amount"] * 12) / 52
+            return math.floor(weekly_budget / 0.01) * 0.01
+
+        week_start_date = datetime.datetime.strptime(week_start, r"%Y-%m-%d")
+        week_end_date = datetime.datetime.strptime(week_end, r"%Y-%m-%d")
+
+        # Set the current date as the start of the week
+        current_date = week_start_date
+
+        for budget in budgets:
+            # Get the budget end date
+            budget_end = datetime.datetime.strptime(budget["end_date"], r"%Y-%m-%d")
+
+            # If budget end is past end of week, then set budget end to week end
+            if budget_end > week_end_date:
+                budget_end = week_end_date
+
+            # Calculate number of days between the current day and the budget end date
+            number_of_days = abs((budget_end - current_date).days) + 1
+            # Calculate the budget per day from the budget[amount] (which is monthly)
+            daily_budget = ((budget["amount"] * 12) / 52) / 7
+            # Add the daily budget, multiplied by the number of days in this budget, to the weekly_budget, rounding down to the nearest 0.01
+            weekly_budget += (daily_budget * number_of_days)
+            # Set current date to be the day after the end of this budget
+            current_date = budget_end + datetime.timedelta(days=1)
+        
         return math.floor(weekly_budget / 0.01) * 0.01
+    
+    except IndexError:
+        raise NoBudgetException()
 
-    week_start_date = datetime.datetime.strptime(week_start, r"%Y-%m-%d")
-    week_end_date = datetime.datetime.strptime(week_end, r"%Y-%m-%d")
+    except ValueError:
+        raise IncorrectDateFormatException()
 
-    # Set the current date as the start of the week
-    current_date = week_start_date
-
-    for budget in budgets:
-        # Get the budget end date
-        budget_end = datetime.datetime.strptime(budget["end_date"], r"%Y-%m-%d")
-
-        # If budget end is past end of week, then set budget end to week end
-        if budget_end > week_end_date:
-            budget_end = week_end_date
-
-        # Calculate number of days between the current day and the budget end date
-        number_of_days = abs((budget_end - current_date).days) + 1
-        # Calculate the budget per day from the budget[amount] (which is monthly)
-        daily_budget = ((budget["amount"] * 12) / 52) / 7
-        # Add the daily budget, multiplied by the number of days in this budget, to the weekly_budget, rounding down to the nearest 0.01
-        weekly_budget += math.floor((daily_budget * number_of_days) / 0.01) * 0.01
-        # Set current date to be the day after the end of this budget
-        current_date = budget_end + datetime.timedelta(days=1)
-
-    return weekly_budget
+    except KeyError:
+        raise IncorrectBudgetFormatException()

@@ -3,4 +3,6 @@ from .weekly_utils import get_week_end
 from .weekly_utils import get_recent_weekly
 from .weekly_utils import get_weekly_expenditure
 from .weekly_utils import WeeklyUtilsException
-from .weekly_utils import IncorrectFormatException
+from .weekly_utils import IncorrectDateFormatException
+from .weekly_utils import IncorrectBudgetFormatException
+from .weekly_utils import NoBudgetException
